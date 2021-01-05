@@ -17,6 +17,17 @@ If not, it will silently exit with a return code of 0.
 $ ./gpg-expiration.py --days 30 2B38BD955557647E7C26B53C19E27469767CFC68
 ```
 
+Add it as a cron job:
+
+```sh
+$ crontab -e
+```
+
+```
+# m  h dom mon dow command
+  0 12  *   *  Mon ~/dev/gpg-expiration/gpg-expiration.py --days 30 2B38BD955557647E7C26B53C19E27469767CFC68
+```
+
 ## Dependencies
 
 gpg-expiration depends on the official
