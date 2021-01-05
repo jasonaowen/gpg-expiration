@@ -55,7 +55,7 @@ def check_expiration(key_id, not_before):
         subkey for subkey in key.subkeys
         if subkey.expires != 0 and subkey.expires < not_before.timestamp()
     ]
-    if len(expiring_subkeys) > 0:
+    if expiring_subkeys:
         print(f'{key.uids[0].uid} will expire before {not_before}:')
         for subkey in expiring_subkeys:
             expires_at = datetime.fromtimestamp(subkey.expires)
