@@ -28,6 +28,12 @@ $ crontab -e
   0 12  *   *  Mon ~/dev/gpg-expiration/gpg-expiration.py --days 30 2B38BD955557647E7C26B53C19E27469767CFC68
 ```
 
+As a special case, you can use the value "all" to check all keys in the current keyring.
+
+```sh
+./gpg-expiration.py --days 0 all
+```
+
 ## Dependencies
 
 gpg-expiration depends on the official

@@ -17,6 +17,7 @@
 
 """
 Check if a GPG key, or any of its subkeys, will expire soon.
+Can optionally check all keys in the current keyring.
 """
 
 import argparse
@@ -30,7 +31,8 @@ def parse_args():
     parser.add_argument(
         'key_id',
         help='''GPG key ID to check.
-        This can be any valid search string that uniquely identifies a key.''',
+        This can be any valid search string that uniquely identifies a key.
+        Use "all" to check all public keys in the current keyring.''',
     )
     parser.add_argument(
         '--days',
@@ -49,8 +51,21 @@ def load_key(key_id):
             raise ValueError('Unable to load key', key_id) from ex
 
 
+def check_all(not_before):
+    return_value = 0
+    with gpg.Context() as ctx:
+        pubkeys = ctx.keylist(pattern=None, secret=False)
+        for key in list(pubkeys):
+            return_value |= _check_key(key, not_before)
+    return return_value
+
+
 def check_expiration(key_id, not_before):
     key = load_key(key_id)
+    return _check_key(key, not_before)
+
+
+def _check_key(key, not_before):
     expiring_subkeys = [
         subkey for subkey in key.subkeys
         if subkey.expires != 0 and subkey.expires < not_before.timestamp()
@@ -60,13 +75,17 @@ def check_expiration(key_id, not_before):
         for subkey in expiring_subkeys:
             expires_at = datetime.fromtimestamp(subkey.expires)
             print(f'  {subkey.fpr} expires at {expires_at}')
-        sys.exit(1)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
     args = parse_args()
     not_before = datetime.today() + timedelta(days=args.days)
-    check_expiration(
-        args.key_id,
-        not_before,
-    )
+    if args.key_id == "all":
+        sys.exit(check_all(not_before))
+    else:
+        sys.exit(check_expiration(
+            args.key_id,
+            not_before,
+        ))
